@@ -244,7 +244,7 @@ _intellij_plugin_jar = rule(
     },
 )
 
-def intellij_plugin(name, deps, plugin_xml, optional_plugin_xmls = [], jar_name = None, extra_runtime_deps = [], plugin_icons = [], **kwargs):
+def intellij_plugin(name, deps, plugin_xml, optional_plugin_xmls = [], jar_name = None, extra_runtime_deps = [], plugin_icons = [], repackage = True, **kwargs):
     """Creates an intellij plugin from the given deps and plugin.xml.
 
     Args:
@@ -269,6 +269,22 @@ def intellij_plugin(name, deps, plugin_xml, optional_plugin_xmls = [], jar_name 
         runtime_deps = [":" + java_deps_name] + extra_runtime_deps,
         create_executable = 0,
     )
+    if (repackage):
+        deploy_jar = binary_name + "_jarjar.jar"
+        native.genrule(
+            name = binary_name + "_jarjar",
+            srcs = [binary_name + "_deploy.jar"],
+            outs = [deploy_jar],
+            tools = ["//third_party/java/jarjar:jarjar_bin"],
+            cmd = "\n".join([
+                "rules=$$(mktemp)",
+                "echo 'zap com.google.common.util.concurrent.ListenableFuture' >> $${rules}",
+                "echo 'zap kotlin.Triple' >> $${rules}",
+                "$(location //third_party/java/jarjar:jarjar_bin) process $${rules} $< $@",
+            ]),
+            message = "Running jarjar on plugin jar",
+        )
+
     jar_target_name = name + "_intellij_plugin_jar"
     _intellij_plugin_jar(
         name = jar_target_name,
