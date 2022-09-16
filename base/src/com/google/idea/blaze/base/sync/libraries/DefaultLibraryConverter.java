@@ -35,7 +35,7 @@ public class DefaultLibraryConverter implements LibraryConverter {
   }
 
   @Override
-  public String getLibraryName(BlazeLibrary library) {
+  public String getLibraryName(Project project, BlazeLibrary library) {
     return library.key.getIntelliJLibraryName();
   }
 
