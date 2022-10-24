@@ -99,7 +99,10 @@ public final class BlazeJavaRunProfileState extends BlazeJavaDebuggableRunProfil
           && BlazeTestEventsHandler.targetsSupported(project, getConfiguration().getTargets())) {
         testUiSession =
             BlazeTestUiSession.create(
-                ImmutableList.of("--runs_per_test=1", "--flaky_test_attempts=1"),
+                ImmutableList.<String>builder()
+                    .addAll(ImmutableList.of("--runs_per_test=1", "--flaky_test_attempts=1"))
+                    .addAll(buildResultHelper.getBuildFlags())
+                    .build(),
                 new LocalBuildEventProtocolTestFinderStrategy(buildResultHelper));
       }
     }
